@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سوال مهم 😄</title>
+  <style>
+    body{
+      font-family: sans-serif;
+      background:#f6f7fb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      margin:0;
+    }
+    .card{
+      background:white;
+      border-radius:16px;
+      padding:28px 22px;
+      width:min(520px, 92vw);
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      text-align:center;
+    }
+    h1{
+      font-size:22px;
+      margin:0 0 18px;
+    }
+    .btns{
+      position:relative;
+      height:90px; /* جا برای فرار دکمه نه */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+    }
+    button{
+      border:0;
+      padding:12px 18px;
+      font-size:16px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+    #yes{
+      background:#22c55e;
+      color:white;
+    }
+    #no{
+      background:#ef4444;
+      color:white;
+      position:absolute; /* تا بتونیم جابه‌جاش کنیم */
+      right:50%;
+      transform:translateX(120px);
+      transition:transform .12s ease, left .12s ease, top .12s ease;
+    }
+    #msg{
+      margin-top:14px;
+      font-size:18px;
+      font-weight:700;
+      color:#111827;
+      min-height:24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>آیا فراز کونی هست؟</h1>
+
+    <div class="btns" id="arena">
+      <button id="yes">آره</button>
+      <button id="no">نه</button>
+    </div>
+
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    const noBtn = document.getElementById('no');
+    const yesBtn = document.getElementById('yes');
+    const msg = document.getElementById('msg');
+    const arena = document.getElementById('arena');
+
+    function moveNoButton() {
+      const rect = arena.getBoundingClientRect();
+
+      // محدوده‌ای که دکمه داخلش جابه‌جا می‌شه
+      const padding = 6;
+      const maxX = rect.width - noBtn.offsetWidth - padding;
+      const maxY = rect.height - noBtn.offsetHeight - padding;
+
+      const x = Math.max(padding, Math.random() * maxX);
+      const y = Math.max(padding, Math.random() * maxY);
+
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+      noBtn.style.transform = 'none';
+    }
+
+    // وقتی موس نزدیک شد یا خواست کلیک کنه، فرار کنه
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      moveNoButton();
+    });
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+
+    yesBtn.addEventListener('click', () => {
+      msg.textContent = 'معلوم بود 😄';
+    });
+
+    // اولین بار هم یه کوچولو جابه‌جا کنیم که حالت absolute درست بشه
+    requestAnimationFrame(() => moveNoButton());
+  </script>
+</body>
+</html>
