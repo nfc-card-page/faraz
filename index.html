@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>  فراز کونی</title>
+  <title>فراز کونی 😈</title>
   <style>
     :root{
       --bg:#0b1020; --panel:#101a35; --txt:#e7ecff; --muted:#a8b3da;
@@ -11,15 +11,27 @@
       --good:#7CFFB2; --warn:#ffd36a;
     }
     *{box-sizing:border-box}
+
+    html, body { height: 100%; }
     body{
-      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      margin:0;
+      min-height:100dvh;
+      min-height:100svh;
+      display:flex; align-items:center; justify-content:center;
       background: radial-gradient(900px 600px at 75% 20%, #1b2a6a 0%, var(--bg) 60%);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color:var(--txt);
       user-select:none;
       overflow:hidden;
+
+      -webkit-tap-highlight-color: transparent;
     }
-    .wrap{width:min(980px, 95vw);}
+
+    .wrap{
+      width:min(980px, 95vw);
+      padding: 10px;
+    }
+
     .hud{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
       margin-bottom:10px;
@@ -42,7 +54,8 @@
 
     .arena{
       position:relative;
-      height:min(520px, 66vh);
+      height:min(520px, 70svh);
+      max-height:520px;
       border:1px solid var(--line);
       border-radius:22px;
       background:
@@ -50,6 +63,9 @@
         radial-gradient(900px 400px at 85% 60%, rgba(255,211,106,.14), transparent 55%),
         linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       overflow:hidden;
+
+      /* مهم برای موبایل: جلوگیری از اسکرول/زوم روی زمین بازی */
+      touch-action:none;
     }
     .hint{
       position:absolute; top:12px; right:12px; left:12px;
@@ -153,6 +169,15 @@
       min-height:22px;
     }
     .toast b{color:var(--warn)}
+
+    @media (max-width: 520px){
+      .pill{ font-size:12px; padding:6px 8px; }
+      .card{ border-radius:14px; }
+      .target{ width:96px; height:96px; }
+      .face{ width:76px; height:76px; border-radius:22px; }
+      #friendPic{ border-radius:18px; }
+      .arena{ border-radius:18px; }
+    }
   </style>
 </head>
 <body>
@@ -168,7 +193,7 @@
 
     <div class="arena card" id="arena">
       <div class="hint">
-        <span>با هدف گیریت کیر بده دهن فراز</span>
+       <span>با هدف گیریت کیر بده دهن فراز</span>
       </div>
 
       <div class="target" id="target" aria-label="target">
@@ -200,9 +225,8 @@
     bestEl.textContent = best;
 
     let hard = false;
-    let targetX = 50, targetY = 50;
 
-    // ✅ متن‌های برخورد (Hit) و خطا (Miss) جدا
+    // ✅ متن‌های برخورد و خطا جدا
     const hitTexts = [
       "جون چه کیر کلفتی😈",
       "دقیق کردی وسط کونم!",
@@ -242,11 +266,8 @@
       const x = Math.random() * (rect.width - pad*2) + pad;
       const y = Math.random() * (rect.height - pad*2) + pad;
 
-      targetX = (x / rect.width) * 100;
-      targetY = (y / rect.height) * 100;
-
-      target.style.left = targetX + "%";
-      target.style.top = targetY + "%";
+      target.style.left = (x / rect.width) * 100 + "%";
+      target.style.top  = (y / rect.height) * 100 + "%";
 
       target.classList.toggle('panic', extraPanic || hard);
     }
@@ -275,14 +296,13 @@
       if (isHit(clientX, clientY)) {
         hits++;
         score += hard ? 2 : 1;
+
         target.classList.add('hit');
         setTimeout(()=>target.classList.remove('hit'), 120);
 
-        // ✅ فقط متن‌های Hit
-        setToast(`<b>حرف فراز:</b> ${hitTexts[Math.floor(Math.random()*hitTexts.length)]}`);
+        setToast(`<b>حرف هدف:</b> ${hitTexts[Math.floor(Math.random()*hitTexts.length)]}`);
         moveTargetRandom(true);
       } else {
-        // ✅ فقط متن‌های Miss
         setToast(missTexts[Math.floor(Math.random()*missTexts.length)]);
         if (Math.random() < (hard ? 0.75 : 0.35)) moveTargetRandom(false);
       }
@@ -290,34 +310,43 @@
       updateHUD();
     }
 
-    // کنترل نشانگر
-    arena.addEventListener('mousemove', (e)=>{
+    // ✅ موبایل + دسکتاپ: رویدادهای Pointer
+    function setCrosshairByClient(clientX, clientY){
       const r = arena.getBoundingClientRect();
-      const x = clamp(e.clientX - r.left, 0, r.width);
-      const y = clamp(e.clientY - r.top, 0, r.height);
+      const x = clamp(clientX - r.left, 0, r.width);
+      const y = clamp(clientY - r.top, 0, r.height);
       crosshair.style.left = x + "px";
       crosshair.style.top = y + "px";
+    }
+
+    arena.addEventListener('pointermove', (e)=>{
+      setCrosshairByClient(e.clientX, e.clientY);
     });
 
-    // کلیک = شلیک
-    arena.addEventListener('click', (e)=>{
+    arena.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      // روی موبایل بهتره crosshair هم همون‌جا ست بشه
+      setCrosshairByClient(e.clientX, e.clientY);
       fireAt(e.clientX, e.clientY);
-    });
+    }, { passive: false });
 
-    // Space = شلیک
+    // Space = شلیک (برای کیبورد)
     window.addEventListener('keydown', (e)=>{
       if (e.code !== "Space") return;
       e.preventDefault();
+
       const r = arena.getBoundingClientRect();
       const ch = crosshair.getBoundingClientRect();
       const cx = ch.left + ch.width/2;
       const cy = ch.top + ch.height/2;
+
       const x = (cx < r.left || cx > r.right) ? (r.left + r.width/2) : cx;
       const y = (cy < r.top  || cy > r.bottom)? (r.top + r.height/2) : cy;
+
       fireAt(x, y);
     }, {passive:false});
 
-    // حرکت خودکار
+    // حرکت خودکار هدف
     setInterval(()=>{
       if (Math.random() < (hard ? 0.55 : 0.25)) moveTargetRandom(false);
     }, 700);
@@ -326,9 +355,6 @@
     updateHUD();
     moveTargetRandom(false);
     setToast("باهدف گیریت کیر بده دهن فراز");
-  </script>html, body { height: 100%; }
-
+  </script>
 </body>
-
-
 </html>
